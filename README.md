@@ -11,3 +11,5 @@ Except for CXR_postprocess.py which would need to be run after CXR_processing_AI
 EDA scripts include,
 - src/time_detail.ipynb
 - src/metrics_calculation.ipynb
+- src/time_stats.ipynb
+- src/accuracy_analysis.ipynb
