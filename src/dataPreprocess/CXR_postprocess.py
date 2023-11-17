@@ -12,6 +12,11 @@ df_ai = pd.read_csv(r"..\..\data\AI\output\Dataset_CXR_AI.csv")
 
 ### Normal ###
 
+# filter first 15 images only
+df_normal = df_normal.sort_values(by=['updatedById', 'modality', 'end_time'])
+df_normal['task_number'] = df_normal.groupby(['updatedById', 'modality']).cumcount() + 1
+df_normal = df_normal[df_normal['task_number'] <= 15]
+
 df_normal_melted = pd.melt(df_normal, id_vars = ['UserStudyDatasetID', 'dataset', 'modality', 'PatientID', 'StudyDescription',
                                                  'StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID',
                                                  'updatedById', 'start_time', 'end_time'],
@@ -39,10 +44,14 @@ df_final = df_normal_melted.pivot_table(index=['UserStudyDatasetID', 'dataset', 
        'StudyDescription', 'StudyInstanceUID', 'SeriesInstanceUID',
        'SOPInstanceUID', 'updatedById', 'variable'], columns='type', values='value', aggfunc='first').reset_index()
 
-df_final.to_csv(r"C:\IUPUI\PLHILab\UserStudy\post-interview-scripts\data\Normal\cxr_postprocess\cxr_postprocess_normal.csv", index = False)
+df_final["Truth"] = df_final["Truth"].replace(to_replace = {0:"FALSE"})
+df_final["User"] = df_final["User"].replace(to_replace = {0:"FALSE"})
+df_final.loc[df_final['Truth'] != "FALSE", 'Truth'] = df_final.loc[df_final['Truth'] != "FALSE", 'variable']
+df_final.loc[df_final['User'] != "FALSE", 'User'] = df_final.loc[df_final['User'] != "FALSE", 'variable']
+
+df_final.to_csv(r"..\..\data\Normal\cxr_postprocess\cxr_postprocess_normal.csv", index = False)
 
 #### AI ###
-
 df_ai_melted = pd.melt(df_ai, id_vars = ['UserStudyDatasetID', 'dataset', 'modality', 'PatientID', 'StudyDescription',
                                                  'StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID',
                                                  'updatedById', 'start_time', 'end_time'],
@@ -86,5 +95,12 @@ df_ai_melted.loc[df_ai_melted['variable'].str.contains('label_prob'), 'variable'
 df_final = df_ai_melted.pivot_table(index=['UserStudyDatasetID', 'dataset', 'modality', 'PatientID',
        'StudyDescription', 'StudyInstanceUID', 'SeriesInstanceUID',
        'SOPInstanceUID', 'updatedById', 'variable'], columns='type', values='value', aggfunc='first').reset_index()
+
+df_final["Truth"] = df_final["Truth"].replace(to_replace = {0:"FALSE"})
+df_final["User"] = df_final["User"].replace(to_replace = {0:"FALSE"})
+df_final["ML"] = df_final["ML"].replace(to_replace = {0:"FALSE"})
+df_final.loc[df_final['Truth'] != "FALSE", 'Truth'] = df_final.loc[df_final['Truth'] != "FALSE", 'variable']
+df_final.loc[df_final['User'] != "FALSE", 'User'] = df_final.loc[df_final['User'] != "FALSE", 'variable']
+df_final.loc[df_final['ML'] != "FALSE", 'ML'] = df_final.loc[df_final['ML'] != "FALSE", 'variable']
 
 df_final.to_csv(r"..\..\data\AI\cxr_postprocess\cxr_postprocess_ai.csv", index = False)
