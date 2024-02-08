@@ -131,8 +131,5 @@ df = pd.concat([cxr_ai,
                pneumothorax_ai,
                pneumothorax_normal])
 
-file_path = root_path + r'\metrics.xlsx'
-with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-    # Write the DataFrame to the 'dataAll' sheet
-    df.to_excel(writer, sheet_name='dataAll', index=False)
-
+file_path = root_path + r'\metrics.csv'
+df.to_csv(file_path, index = False)
